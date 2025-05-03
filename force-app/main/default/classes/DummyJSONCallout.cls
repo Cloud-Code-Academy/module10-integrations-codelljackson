@@ -26,7 +26,8 @@ public with sharing class DummyJSONCallout {
 	/* 
 	 * Question 1
      * Fetches user information from an external system https://dummyjson.com/user/{id} ('DummyJsonUser') based on the provided dummy user ID. 
-     * If the callout is successful and returns an HTTP status of 200, the method will update a contact based on the DummyJSON_Id__c with the data returned from the external system.
+     * If the callout is successful and returns an HTTP status of 200, the method will update a contact based on the DummyJSON_Id__c with the 
+	 * data returned from the external system.
 	 * Use the createContactFromJson method to parse the JSON response and create a Salesforce Contact object.
      * Documentation: https://dummyjson.com/docs/users
 	 * This callout method should work in triggers
@@ -35,17 +36,26 @@ public with sharing class DummyJSONCallout {
      */
 
 	public static void getDummyJSONUserFromId(String dummyUserId) {
-		// Create HTTP request to send.
+		
+		HttpRequest req = new HttpRequest(); // Create HTTP request to send.
 
-		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
+		req.setEndpoint('callout:DummyJsonUser/users/' + dummyUserId); // Set the endpoint URL. Use direct URL or for best practices use Named Credential.
 
-		// Set the HTTP method to GET.
+		req.setMethod('GET');  // Set the HTTP method to GET.
 
-		// Send the HTTP request and get the response.
+		Http http = new Http(); // Send the HTTP request and get the response.
+		HttpResponse res;
 
-		// If the HTTP response code is successful, parse the JSON response and update the contact.
-		Contact cont = null;
-		upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (dummyUserId)
+		try {
+			res = http.send(req); 
+		}
+		catch(CalloutException e) {
+			return; 
+		}
+		if (res.getStatusCode() == 200) { 
+			Contact con = createContactFromJson(res.getBody()); 
+			upsert con DummyJSON_Id__c;  //insert/update from the JSON response using the external id (dummyUserId)
+		}
 	}
 
 	/* 
@@ -65,17 +75,25 @@ public with sharing class DummyJSONCallout {
      */
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
 	private static Contact createContactFromJson(String jsonResponse) {
-		// Deserialize the JSON string into map of primitive data types.
+		
+		Map<String,Object> data = (Map<String,Object>) JSON.deserializeUntyped(jsonResponse);  // Deserialize the JSON string into map of primitive data types.
 
-		// Create a new contact from the JSON response.
+		Contact con = new Contact(); // Create a new contact from the JSON response.
 
-		// Set the contact fields from the JSON response.
+		con.Email = (String) data.get('email');  // Set the contact fields from the JSON response.
+		con.Phone = (String) data.get('phone');
+		con.DummyJSON_Id__c = String.valueOf(data.get('id'));
+		con.Birthdate = Date.valueOf((String) data.get('birthDate')); 
+		
+		Map<String, Object> addressMap = (Map<String, Object>) data.get('address');  // Deserialize the address from the JSON response.
 
-		// Deserialize the address from the JSON response.
+		con.MailingStreet = (String) addressMap.get('address');  // Set the address fields on the contact.
+		con.MailingCity = (String) addressMap.get('city'); 
+		con.MailingState = (String) addressMap.get('state'); 
+		con.MailingPostalCode = (String) addressMap.get('postalCode'); 
+		con.MailingCountry = (String) addressMap.get('country'); 
 
-		// Set the address fields on the contact.
-
-		return null;
+		return con;
 	}
 
 	/* 

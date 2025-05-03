@@ -5,7 +5,7 @@
 @IsTest
 public with sharing class DummyJSONCalloutTest {
 	// This test method will test the getDummyJSONUserFromId future method with a mock HTTP response.
-	@IsTest
+	@IsTest //1
 	static void testGetDummyJSONUserFromId() {
 		// Create contact
 		Contact cont = new Contact(FirstName = 'Test', LastName = 'User', DummyJSON_Id__c = '1');
@@ -56,7 +56,7 @@ public with sharing class DummyJSONCalloutTest {
 		);
 	}
 
-	@isTest
+	@isTest //2
 	static void testPostCreateDummyJSONUser() {
 		// Create a dummy contact to simulate the scenario
 		Contact testContact = new Contact(
@@ -86,7 +86,7 @@ public with sharing class DummyJSONCalloutTest {
 		);
 	}
 
-	@isTest
+	@isTest //3
 	static void testGenerateDummyJsonUserPayload() {
 		// Prepare test data
 		Contact testContact = new Contact(
@@ -112,7 +112,7 @@ public with sharing class DummyJSONCalloutTest {
 		System.assertEquals('1234567890', payloadMap.get('phone'), 'Phone does not match.');
 	}
 
-	@isTest
+	@isTest //4
 	static void testCreateContactFromJson() {
 		// JSON string that represents the response data
 		String jsonResponse = DummyJSONCalloutMockGenerator.DUMMY_JSON_USER_PAYLOAD;
@@ -131,7 +131,7 @@ public with sharing class DummyJSONCalloutTest {
 		System.assertEquals('Testland', cont.MailingCountry, 'MailingCountry does not match.');
 	}
 
-	@IsTest
+	@IsTest //5
 	static void testContactInsert() {
 		//Create 100 contact
 		List<Contact> contacts = new List<Contact>();
@@ -174,7 +174,7 @@ public with sharing class DummyJSONCalloutTest {
 		}
 	}
 
-	@IsTest
+	@IsTest //6
 	static void testPostCreateDummyJSONUserAfterInsert() {
 		// Create and insert a test contact
 		Contact cont = new Contact(
